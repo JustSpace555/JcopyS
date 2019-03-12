@@ -1,0 +1,207 @@
+#!/bin/bash
+
+# 									Help
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+lgreen='\033[1;32m'
+lred='\033[1;31m'
+cyan='\033[0;36m'
+
+if [[ $1 = "--help" ]] || [[ $1 == "-h" ]]
+then
+	echo -en "
+${lgreen}NAME${normal}
+	JcopyS -- copying the selected file a certain number of times to a given directory.
+
+${lgreen}SYNOPSIS${normal}
+	JcopyS [-dhrs] [${lgreen}FILE${normal}] [${lgreen}PATH${normal}] [${lgreen}COUNT${normal}]
+
+${lgreen}DESCRIPTION${normal}
+	This script copies ${lgreen}FILE${normal} along a given ${lgreen}PATH${normal} a ${lgreen}COUNT${normal} number of times.
+	Each copy has the same name as original file + number of copy.
+
+	-d
+		Allows to copy a directory.
+
+	-h, --help
+		Show this help text.
+
+	-r
+		Will not show the ${lred}CONFIRMATION${normal} for copy.
+		${lred}(Not recommended for use.)${normal}
+
+	-s
+		Silent mode. Will not show any output messages except of flags error and ${bold}CONFIRMATION{$normal}.
+
+	If input for ${lgreen}PATH${normal} is missing, ${lgreen}FILE${normal} will copy in present directory (.) a ${lgreen}COUNT${normal} number of times.
+	If input for ${lgreen}COUNT${normal} is missing, ${lgreen}FILE${normal} will copy along a ${lgreen}PATH${normal} 1 time.
+	IF input for ${lgreen}PATH${normal} and ${lgreen}COUNT${normal} is missing, ${lgreen}FILE${normal} will copy in present directory (.) 1 time.
+
+${lred}CONFIRMATION${normal}
+	Before copying, the program will request confirmation of user execution in the specified format:
+	'Are you sure you want to copy ${lgreen}FILE${normal} to ${lgreen}PATH COUNT${normal} times?'
+
+${lgreen}EXAMPLE${normal}
+	File 'JS'. After ./JcopyS JS . 3
+	The 'ls' result will be:
+	JS JS1 JS2 JS3
+
+${cyan}JcopyS
+
+Created by JustSpace on 02.03.2019.
+Copyright © 2019 Space. All rights reserved.
+"
+exit
+fi
+# 									Конец Help
+
+# 									Присваивание
+if [[ $1 == '-'* ]]
+then
+	FLAGS=$1
+	FILE=$2
+	PATH=$3
+	COUNT=$4
+else
+	FILE=$1
+	PATH=$2
+	COUNT=$3
+fi
+# 									Конец присваивание
+
+# 									Проверки на критические ошибки
+
+# Флаги
+if [[ -n $FLAGS ]] && [[ $FLAGS != *'d'* ]] && [[ $FLAGS != *'r'* ]] && [[ $FLAGS != *'s'* ]]
+then
+	echo "Wrong flag. Please, check your input or check help (-h, --help)."
+	exit
+fi
+# Конец проверки на флаги
+
+# Файл
+
+if ! [[ -e $FILE ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "Input file does not exist. Please, check your input."
+	fi
+	exit
+fi
+
+if ! [[ -r $FILE ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "Input file does not readable, or you do not have access rights. Please, check file."
+	fi
+	exit
+fi
+
+if ! [[ -G $FILE ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "You are not allowed to work with this file. Please, contact your administrator."
+	fi
+	exit
+fi
+
+if [[ $FLAGS != *'d'* ]] && [ -d $FILE ]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "Input for file is a directory. Put flag -d and try again or choose another file for input."
+	fi
+	exit
+fi
+
+# Конец проверки на файл
+
+# Путь
+
+if ! [[ -n $PATH ]] #Если путь не указан, задается стантартная директория
+then
+	PATH=.
+fi
+
+if ! [[ -d $PATH ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "This path does not exist. Please, check your input or path."
+	fi
+	exit
+fi
+
+if ! [[ -w $PATH ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "This path does not writable or you do not have access rights. Please, check path."
+	fi
+	exit
+fi
+
+# Конец проверки на путь
+
+# Количество копий
+
+if [[ $COUNT == *[A-Za-z\!\@\#\$\%\^\&\*\(\)\-\=\_\+\§\±\\\|\"\№\;\%\:\?\[\]\{\}]* ]]
+then
+	if [[ $FLAGS != *'s'* ]]
+	then
+		echo "Input number of copies has unacceptable characters. Please, check your input."
+	fi
+	exit
+fi
+
+# Конец проверки на количество
+
+# 									Проверки завершены
+
+# Основная программа
+
+if ! [[ -n $COUNT ]]
+then
+	COUNT=1
+	echo "$COUNT"
+fi
+
+if [[ $FLAGS != *'r'* ]]
+then
+	read -p "Are you sure you want to copy '$FILE' to '$PATH' $COUNT times? (y / n) " answer
+	case $answer in
+		y) if [[ $FLAGS != *'s'* ]]
+			then
+				echo "OK, as you wish."
+			fi;;
+		n) if [[ $FLAGS != *'s'* ]]
+			then
+				echo "Rational decision."
+			fi
+			exit;;
+	esac
+fi
+
+if [[ $FLAGS != *'d'* ]]
+then
+	for (( var=1; var <= $COUNT; var++ ))
+	do
+		/bin/cp $FILE $PATH/$FILE$var
+	done
+else
+	for (( var=1; var <= $COUNT; var++ ))
+	do
+		/bin/cp -R $FILE $PATH/$FILE$var
+	done
+fi
+
+if ! [[ $FLAGS == *'s'* ]]
+then
+	echo "Done."
+fi
+
+exit
