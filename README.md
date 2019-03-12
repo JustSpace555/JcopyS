@@ -1,5 +1,5 @@
 # JcopyS
-the script copies the selected file to the specified directory a certain number of times
+The script copies the selected file to the specified directory a certain number of times.
 
 NAME
 	JcopyS -- copying the selected file a certain number of times to a given directory.
