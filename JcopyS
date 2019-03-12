@@ -2,7 +2,6 @@
 
 # 									Help
 
-bold=$(tput bold)
 normal=$(tput sgr0)
 lgreen='\033[1;32m'
 lred='\033[1;31m'
