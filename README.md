@@ -22,7 +22,7 @@ DESCRIPTION
 		(Not recommended for use.)
 
 	-s
-		Silent mode. Will not show any output messages except of flags error and CONFIRMATION{}.
+		Silent mode. Will not show any output messages except of flags error and CONFIRMATION.
 
 	If input for PATH is missing, FILE will copy in present directory (.) a COUNT number of times.
 	If input for COUNT is missing, FILE will copy along a PATH 1 time.
